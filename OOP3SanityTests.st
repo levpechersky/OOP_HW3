@@ -1,11 +1,4 @@
-TestCase subclass: #SanityTests
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'OOP3SanityTests'!
-
-!SanityTests methodsFor: 'as yet unclassified' stamp: 'NB 12/11/2017 21:25'!
-setUp
+TestCase subclass: #SanityTests	instanceVariableNames: ''	classVariableNames: ''	poolDictionaries: ''	category: 'OOP3SanityTests'!!SanityTests methodsFor: 'as yet unclassified' stamp: 'NB 12/11/2017 21:25'!setUp
 MyObject instVarNamed: 'isInterface' put: false.
 MyObject instVarNamed: 'behavesLike' put: {}.
 (Smalltalk hasClassNamed: #A) ifTrue: [Smalltalk removeClassNamed: #A].
@@ -13,10 +6,8 @@ MyObject instVarNamed: 'behavesLike' put: {}.
 (Smalltalk hasClassNamed: #C) ifTrue: [Smalltalk removeClassNamed: #C].
 (Smalltalk hasClassNamed: #IA) ifTrue: [Smalltalk removeClassNamed: #IA].
 (Smalltalk hasClassNamed: #IB) ifTrue: [Smalltalk removeClassNamed: #IB].
-! !
-
-!SanityTests methodsFor: 'as yet unclassified' stamp: 'NB 12/11/2017 21:27'!
-testSanityPart1
+! !!SanityTests methodsFor: 'as yet unclassified' stamp: 'LP 12/9/2017 16:01'!testMyTest1
+| method |Transcript show: 'run getTypeCheckStringForArg:';cr.Transcript show: (MyObject getTypeCheckStringForArg: 1 name: 'bar' type: 'Integer'); cr; cr.Transcript show: 'run compile: where:';cr.method := 'foo: a| localVar |localVar:=0.^localVar.'.Transcript show: (MyObject compile: method where: #(Integer)); cr; cr.! !!SanityTests methodsFor: 'as yet unclassified' stamp: 'NB 12/11/2017 21:27'!testSanityPart1
 MyObject subclass: #A instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
 A subclass: #B instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
 "compiling the old way"
@@ -26,10 +17,7 @@ self assert: (B methodDict size = 1).
 "compiling the new way:"
 B compile:
 'foo: a' where: #(Integer).
-self assert: (B methodDict size = 2).! !
-
-!SanityTests methodsFor: 'as yet unclassified' stamp: 'NB 12/11/2017 21:28'!
-testSanityPart2
+self assert: (B methodDict size = 2).! !!SanityTests methodsFor: 'as yet unclassified' stamp: 'NB 12/11/2017 21:28'!testSanityPart2
 | flag |
 "compile 2 interfaces:"
 MyObject subclass: #IA isInterface: true behavesLike: {} instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
@@ -55,14 +43,11 @@ self assert: (B behavesLike size = 2).
 		self assert: (e messageText = 'Interfaces can not have state!!')
 	].
 self assert: (flag = true)
-! !
-
-!SanityTests methodsFor: 'as yet unclassified' stamp: 'NB 12/11/2017 21:29'!
-testSanityPart3
+! !!SanityTests methodsFor: 'as yet unclassified' stamp: 'NB 12/11/2017 21:29'!testSanityPart3
 |a|
 MyObject subclass: #IA isInterface: true behavesLike: {} instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
 
 MyObject subclass: #A isInterface: false behavesLike: {IA} instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
 a := A new.
 self assert: (a isKindOf: IA).
-self assert: (a isKindOf: A).! !
+self assert: (a isKindOf: A).! !
