@@ -1,4 +1,4 @@
-'From Squeak5.1 of 5 September 2016 [latest update: #16549] on 14 December 2017 at 5:37:41 pm'!
+'From Squeak5.1 of 5 September 2016 [latest update: #16549] on 15 December 2017 at 12:08:04 am'!
 TestCase subclass: #OOP3Test
 	instanceVariableNames: ''
 	classVariableNames: ''
@@ -337,7 +337,7 @@ self assert: (IA isImplemented = true).
 self expectErrorFrom: [ A isImplemented ] withErrMessage: 'A is not an interface!!'.
 ! !
 
-!OOP3Test methodsFor: 'as yet unclassified' stamp: 'AS 12/14/2017 17:30'!
+!OOP3Test methodsFor: 'as yet unclassified' stamp: 'AS 12/15/2017 00:06'!
 testIsImplementedWithMethods
 
 	| a b cd1 res1 res2 e |
@@ -393,21 +393,16 @@ CD compile:
 'cdVar: var
 | |
 x := var.' where: #(Number).
-	cd1 := CD new.
-	cd1 cdVar: 5.
-	self assert: (CD methodDict size = 3).
-	self assert: (cd1 cdVar = 5).
-	res1 := (cd1 fooC: 2 arg2: 4 arg3: 8).
-	res2 := (2 + (4*9) + (8*7)).
-	self assert: (res1 = res2).
-	self assert: (IC isImplemented).
-	self assert: (ID isImplemented not).
-
 CD compile:
 'fooD
 | |
 ^''FOOD''' where: #().
 	cd1 := CD new.
+	cd1 cdVar: 5.
+	self assert: (cd1 cdVar = 5).
+	res1 := (cd1 fooC: 2 arg2: 4 arg3: 8).
+	res2 := (2 + (4*9) + (8*7)).
+	self assert: (res1 = res2).
 	cd1 cdVar: 6.
 	self assert: (CD methodDict size = 4).
 	self assert: (cd1 fooD = 'FOOD').
@@ -430,16 +425,14 @@ E compile:
 local1 := 3.
 local1 := local1*2.
 ^local1' where: #().
-	self assert: (E methodDict size = 1).
-	e := E new.
-	self assert: (e fooE = 6).
-	self assert: (IE isImplemented).
-
 E compile:
 'fooF: arg1
 | local1 |
 local1 := 4.
 ^(local1*arg1)' where: #(Integer).
+	e := E new.
+	self assert: (e fooE = 6).
+	self assert: (IE isImplemented).
 	self assert: (E methodDict size = 2).
 	e := E new.
 	self assert: (e fooE = 6).
