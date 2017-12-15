@@ -1,4 +1,4 @@
-'From Squeak5.1 of 5 September 2016 [latest update: #16549] on 15 December 2017 at 12:07:10 am'!
+'From Squeak5.1 of 5 September 2016 [latest update: #16549] on 15 December 2017 at 11:55:14 pm'!
 Object subclass: #MyObject
 	instanceVariableNames: ''
 	classVariableNames: ''
@@ -8,17 +8,17 @@ Object subclass: #MyObject
 IMPORTANT: 1. Every Interface must inherit from MyObject directly!!    2. Don't add any additional fields!!!
 
 
-!MyObject methodsFor: 'class membership' stamp: 'AS 12/14/2017 23:33'!
+!MyObject methodsFor: 'class membership' stamp: 'AS 12/15/2017 12:58'!
 isKindOf: aClassOrInterface
 	"New isKindOf method for testing interfaces as well."
 
 	| behaviourSet resClass resInterface |
 	resClass := false.
 	resClass := false.
-	behaviourSet := self behavesLike.
+	behaviourSet := self class behavesLike.
 	resInterface := behaviourSet includes: aClassOrInterface.
-	resClass := self inheritsFrom: aClassOrInterface.
-	^(resInterface or: resClass)
+	resClass := self class inheritsFrom: aClassOrInterface.
+	^(resInterface or: resClass or: (self class = aClassOrInterface))
 	! !
 
 "-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
@@ -26,7 +26,7 @@ isKindOf: aClassOrInterface
 MyObject class
 	instanceVariableNames: 'behavesLike isInterface'!
 
-!MyObject class methodsFor: 'interfaces support' stamp: 'AS 12/14/2017 23:55'!
+!MyObject class methodsFor: 'interfaces support' stamp: 'AS 12/15/2017 23:31'!
 allDefaultMethods
 	"	Returns a collection of all (selector, method) pairs for
 		the default methods of this interface.
@@ -38,7 +38,9 @@ allDefaultMethods
 	(self isInterface) ifTrue: [
 		self methodDict keysAndValuesDo: [:selector :method |
 			(self methodSelectorIsDefault: selector)
-			ifTrue: [defaultMethods at: selector put: method].].
+			ifTrue: [defaultMethods at: selector put: method].
+		self interfacesBehaveLike do: [:interface |
+			defaultMethods addAll: (interface allDefaultMethodsOneLevel)]].
 	].
 	^defaultMethods! !
 
@@ -280,7 +282,7 @@ category: aCategoryName.
 	^newClass
 	! !
 
-!MyObject class methodsFor: 'subclass creation' stamp: 'AS 12/15/2017 00:01'!
+!MyObject class methodsFor: 'subclass creation' stamp: 'AS 12/15/2017 22:51'!
 subclass: aSubclassName isInterface: isInterface behavesLike:
 aCollection instanceVariableNames: instVarNames classVariableNames:
 classVarNames poolDictionaries: poolDictionaries category:
@@ -314,6 +316,9 @@ aCategoryName
 	isInterface ifFalse: [
 		defaultMethods := Dictionary new.
 		aCollection do: [:interface |
+			defaultMethods addAll: (interface allDefaultMethods).
+		].
+		self interfacesBehaveLike do: [:interface | 
 			defaultMethods addAll: (interface allDefaultMethods).
 		].
 		self methodDict addAll: defaultMethods.
@@ -386,3 +391,17 @@ compile: aSourceCode where: anOrderedCollection
 
 	
 ! !
+
+
+!MyObject class methodsFor: 'as yet unclassified' stamp: 'AS 12/15/2017 23:52'!
+allDefaultMethodsOneLevel
+	"comment stating purpose of message"
+
+	| defaultMethods |
+	defaultMethods := Dictionary new.
+	(self isInterface) ifTrue: [
+		self methodDict do: [:method |
+			(self methodIsDefault: (method getSource asString)) ifTrue: [ defaultMethods add: method. ]. 
+		].
+	].
+	^defaultMethods! !
