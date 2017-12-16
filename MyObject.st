@@ -1,4 +1,4 @@
-'From Squeak5.1 of 5 September 2016 [latest update: #16549] on 15 December 2017 at 11:55:14 pm'!
+'From Squeak5.1 of 5 September 2016 [latest update: #16549] on 16 December 2017 at 3:42:25 pm'!
 Object subclass: #MyObject
 	instanceVariableNames: ''
 	classVariableNames: ''
@@ -26,22 +26,20 @@ isKindOf: aClassOrInterface
 MyObject class
 	instanceVariableNames: 'behavesLike isInterface'!
 
-!MyObject class methodsFor: 'interfaces support' stamp: 'AS 12/15/2017 23:31'!
-allDefaultMethods
+!MyObject class methodsFor: 'interfaces support' stamp: 'AS 12/16/2017 14:52'!
+allDefaultMethods: aCollection
 	"	Returns a collection of all (selector, method) pairs for
 		the default methods of this interface.
 		If this is a class, returns an empty collection.
 	"
 
 	| defaultMethods |
-	defaultMethods := Dictionary new.
-	(self isInterface) ifTrue: [
-		self methodDict keysAndValuesDo: [:selector :method |
-			(self methodSelectorIsDefault: selector)
-			ifTrue: [defaultMethods at: selector put: method].
-		self interfacesBehaveLike do: [:interface |
-			defaultMethods addAll: (interface allDefaultMethodsOneLevel)]].
-	].
+	defaultMethods := Set new.
+	"self methodDict do: [:compiledMethod |
+		(self methodSelectorIsDefault: (compiledMethod getSource asString))
+		ifTrue: [defaultMethods add: (compiledMethod getSource asString)]."
+	aCollection do: [:interface |
+		defaultMethods addAll: (interface allDefaultMethodsOneLevel)].
 	^defaultMethods! !
 
 !MyObject class methodsFor: 'interfaces support' stamp: 'LP 12/11/2017 18:13'!
@@ -102,6 +100,17 @@ new
 	^super new.
 	! !
 
+
+!MyObject class methodsFor: 'private' stamp: 'AS 12/16/2017 14:14'!
+addAllDefaultMethods: aCollection
+	"comment stating purpose of message"
+
+	| defaultMethodStrings |
+	
+	defaultMethodStrings := self allDefaultMethods: aCollection.
+	defaultMethodStrings do: [:methodSource |
+		self compile: methodSource.
+	].! !
 
 !MyObject class methodsFor: 'private' stamp: 'LP 12/11/2017 17:36'!
 argumentsInMethod: aSourceCode
@@ -165,16 +174,18 @@ implements: aInterface
 				
 			! !
 
-!MyObject class methodsFor: 'private' stamp: 'AS 12/14/2017 23:18'!
+!MyObject class methodsFor: 'private' stamp: 'AS 12/16/2017 15:37'!
 implementsInterfaces
 	"Checks if the current class implements all its interfaces."
 
 	| behaviourDict res |
-	behaviourDict := self interfacesBehaveLike.
+	behaviourDict := self behavesLike.
 	res := true.
-	behaviourDict do: [:interface |
-		(self implements: interface)
+	behaviourDict do: [:behaves |
+		(behaves isInterface) ifTrue: [
+		(self implements: behaves)
 		ifFalse: [res := false].
+		].
 	].
 	^res! !
 
@@ -282,7 +293,7 @@ category: aCategoryName.
 	^newClass
 	! !
 
-!MyObject class methodsFor: 'subclass creation' stamp: 'AS 12/15/2017 22:51'!
+!MyObject class methodsFor: 'subclass creation' stamp: 'AS 12/16/2017 14:29'!
 subclass: aSubclassName isInterface: isInterface behavesLike:
 aCollection instanceVariableNames: instVarNames classVariableNames:
 classVarNames poolDictionaries: poolDictionaries category:
@@ -310,19 +321,10 @@ aCategoryName
 	
 	newClass instVarNamed: 'isInterface' put: isInterface.
 	newClass instVarNamed: 'behavesLike' put: aCollection.
-	
-	"If not an interface, add default methods 
+	"
+	If not an interface, add default methods 
 	 from all inherited interfaces directly into methodDict"
-	isInterface ifFalse: [
-		defaultMethods := Dictionary new.
-		aCollection do: [:interface |
-			defaultMethods addAll: (interface allDefaultMethods).
-		].
-		self interfacesBehaveLike do: [:interface | 
-			defaultMethods addAll: (interface allDefaultMethods).
-		].
-		self methodDict addAll: defaultMethods.
-	].
+	newClass addAllDefaultMethods: aCollection.
 	
 	 ^newClass
 	! !
@@ -393,15 +395,15 @@ compile: aSourceCode where: anOrderedCollection
 ! !
 
 
-!MyObject class methodsFor: 'as yet unclassified' stamp: 'AS 12/15/2017 23:52'!
+!MyObject class methodsFor: 'as yet unclassified' stamp: 'AS 12/16/2017 14:18'!
 allDefaultMethodsOneLevel
 	"comment stating purpose of message"
 
 	| defaultMethods |
-	defaultMethods := Dictionary new.
+	defaultMethods := Set new.
 	(self isInterface) ifTrue: [
 		self methodDict do: [:method |
-			(self methodIsDefault: (method getSource asString)) ifTrue: [ defaultMethods add: method. ]. 
+			(self methodIsDefault: (method getSource asString)) ifTrue: [ defaultMethods add: (method getSource asString). ]. 
 		].
 	].
 	^defaultMethods! !

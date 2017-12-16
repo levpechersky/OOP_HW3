@@ -1,4 +1,4 @@
-'From Squeak5.1 of 5 September 2016 [latest update: #16549] on 15 December 2017 at 11:55:24 pm'!
+'From Squeak5.1 of 5 September 2016 [latest update: #16549] on 16 December 2017 at 3:42:17 pm'!
 TestCase subclass: #OOP3Test
 	instanceVariableNames: ''
 	classVariableNames: ''
@@ -41,11 +41,11 @@ MyObject instVarNamed: 'behavesLike' put: {}.
 (Smalltalk hasClassNamed: #IE) ifTrue: [Smalltalk removeClassNamed: #IE].
 (Smalltalk hasClassNamed: #IF) ifTrue: [Smalltalk removeClassNamed: #IF].! !
 
-!OOP3Test methodsFor: 'as yet unclassified' stamp: 'AS 12/15/2017 23:16'!
+!OOP3Test methodsFor: 'as yet unclassified' stamp: 'AS 12/16/2017 15:27'!
 testAbstractInstantiation
 	"Tests that instantiaion of an Abstract class is not possible."
 
-	| ba cd |
+	| ba cd e f |
 MyObject subclass: #IA isInterface: true behavesLike: {} instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
 IA compile: 'foo'.
 IA compile: 'bar: arg'.
@@ -85,7 +85,21 @@ CD compile:
 	self shouldnt: [ cd := CD new. ] raise: AssertionFailure.
 	self assert: ((cd foo: 4) = 7).
 	self assert: ((cd bar: 'Hello, ') = 'Hello, World!!').
-	self assert: ((cd foobar: 5 arg2: 19) = 24).! !
+	self assert: ((cd foobar: 5 arg2: 19) = 24).
+
+MyObject subclass: #E isInterface: false behavesLike: {ID} instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
+E subclass: #F isInterface: false behavesLike: {} instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
+	
+	self should: [ e := E new. ] raise: AssertionFailure.
+	self should: [ f := F new. ] raise: AssertionFailure.
+
+E compile:
+'foobar: a arg2: b
+	^(a + b)' where: #(Integer Integer).
+	
+	self shouldnt: [ e := E new. ] raise: AssertionFailure.
+	self shouldnt: [ f := F new. ] raise: AssertionFailure.
+! !
 
 !OOP3Test methodsFor: 'as yet unclassified' stamp: 'AS 12/15/2017 23:17'!
 testAmbiguities
@@ -360,11 +374,130 @@ self assert: (result = (2*3*4.0*10.0)).
 
 ! !
 
-!OOP3Test methodsFor: 'as yet unclassified' stamp: 'AS 12/15/2017 13:51'!
+!OOP3Test methodsFor: 'as yet unclassified' stamp: 'AS 12/16/2017 15:41'!
 testDefaultInterfaceMethods
 	"comment stating purpose of message"
 
-	^self! !
+	| a b c d e f |
+
+MyObject subclass: #IA isInterface: true behavesLike: {} instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
+IA compile:
+'defaultFoo
+	^42'.
+
+MyObject subclass: #IB isInterface: true behavesLike: {IA} instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
+IB compile:
+'defaultBar
+	^''Hello, '''.
+
+MyObject subclass: #IC isInterface: true behavesLike: {} instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
+IC compile:
+'defaultBaz
+	^''World!!'''.
+
+
+MyObject subclass: #A isInterface: false behavesLike: {IA} instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
+MyObject subclass: #B isInterface: false behavesLike: {IB} instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
+MyObject subclass: #C isInterface: false behavesLike: {IB . IC} instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
+
+	a := A new.	
+	b := B new.
+	c := C new.
+	
+	self assert: (a isKindOf: IA).
+	self assert: (a defaultFoo = 42).
+	
+	self assert: (b isKindOf: IA).
+	self assert: (b isKindOf: IB).
+	self assert: (b defaultFoo = 42).
+	self assert: (b defaultBar = 'Hello, ').
+	
+	self assert: (c isKindOf: IA).
+	self assert: (c isKindOf: IB).
+	self assert: (c isKindOf: IC).
+	self assert: (c defaultFoo = 42).
+	self assert: (c defaultBar = 'Hello, ').
+	self assert: (((c defaultBar) , (c defaultBaz)) = 'Hello, World!!').
+
+MyObject subclass: #ID isInterface: true behavesLike: {} instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
+ID compile:
+'defaultDoD
+	^67'.
+
+MyObject subclass: #IE isInterface: true behavesLike: {ID} instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
+IE compile:
+'defaultDoE
+	^''Doing E'''.
+IE compile: 'fooBar: a'.
+
+MyObject subclass: #IF isInterface: true behavesLike: {IE} instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
+IF compile:
+'defaultDoF
+	^''I am doing F'''.
+	
+MyObject subclass: #D isInterface: false behavesLike: {IB . IC . IF} instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
+D compile:
+'foo: a
+	| local1 |
+	local1 := self defaultDoD.
+	^(a + local1)' where: #(Number).
+
+D subclass: #E isInterface: false behavesLike: {} instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
+E subclass: #F isInterface: false behavesLike: {} instanceVariableNames: '' classVariableNames: '' poolDictionaries: ''	category: 'OOP3'.
+
+	self should: [ d := D new. ] raise: AssertionFailure.
+	self should: [ e := E new. ] raise: AssertionFailure.
+	self should: [ f := F new. ] raise: AssertionFailure.
+
+D compile:
+'fooBar: a
+	^(a + 1)' where: #(Integer).
+	
+	self shouldnt: [ d := D new. ] raise: AssertionFailure.
+	self shouldnt: [ e := E new. ] raise: AssertionFailure.
+	self shouldnt: [ f := F new. ] raise: AssertionFailure.
+	
+	self assert: (d isKindOf: IA).
+	self assert: (d isKindOf: IB).
+	self assert: (d isKindOf: IC).
+	self assert: (d isKindOf: ID).
+	self assert: (d isKindOf: IE).
+	self assert: (d isKindOf: IF).
+	self assert: (d defaultFoo = 42).
+	self assert: (d defaultBar = 'Hello, ').
+	self assert: (((d defaultBar) , (d defaultBaz)) = 'Hello, World!!').
+	self assert: (d defaultDoD = 67).
+	self assert: (d defaultDoE = 'Doing E').
+	self assert: (d defaultDoF = 'I am doing F').
+	self assert: ((d fooBar: 5) = 6).
+	self assert: ((d foo: 4) = 71).
+	
+	self assert: (e isKindOf: IA).
+	self assert: (e isKindOf: IB).
+	self assert: (e isKindOf: IC).
+	self assert: (e isKindOf: ID).
+	self assert: (e isKindOf: IE).
+	self assert: (e isKindOf: IF).
+	self assert: (e isKindOf: D).
+	self assert: (e isKindOf: E).
+	self assert: (e defaultFoo = 42).
+	self assert: (e defaultBar = 'Hello, ').
+	self assert: (((e defaultBar) , (e defaultBaz)) = 'Hello, World!!').
+	self assert: (e defaultDoD = 67).
+	self assert: (e defaultDoE = 'Doing E').
+	self assert: (e defaultDoF = 'I am doing F').
+	self assert: ((e fooBar: 5) = 6).
+	self assert: ((e foo: 4) = 71).
+	
+	self assert: (f defaultFoo = 42).
+	self assert: (f defaultBar = 'Hello, ').
+	self assert: (((f defaultBar) , (f defaultBaz)) = 'Hello, World!!').
+	self assert: (f defaultDoD = 67).
+	self assert: (f defaultDoE = 'Doing E').
+	self assert: (f defaultDoF = 'I am doing F').
+	self assert: ((f fooBar: 5) = 6).
+	self assert: ((f foo: 4) = 71).
+	! !
 
 !OOP3Test methodsFor: 'as yet unclassified' stamp: 'LP 12/11/2017 20:05'!
 testInterfaceCantHaveInstance
