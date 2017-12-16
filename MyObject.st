@@ -1,4 +1,4 @@
-'From Squeak5.1 of 5 September 2016 [latest update: #16549] on 16 December 2017 at 3:42:25 pm'!
+'From Squeak5.1 of 5 September 2016 [latest update: #16549] on 16 December 2017 at 8:12:23 pm'!
 Object subclass: #MyObject
 	instanceVariableNames: ''
 	classVariableNames: ''
